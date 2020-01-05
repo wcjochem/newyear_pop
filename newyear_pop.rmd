@@ -1,0 +1,91 @@
+---
+title: "NewYear_Pop"
+author: "Chris Jochem"
+date: "03/01/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## When did 2020 start for most people?
+
+Here's a fun little trivia question that a colleague recently asked. We know that the New Year starts at different times for different places - we see the fireworks in Australia long before New York City, for example. But **by what time were most of the world's people in 2020?**
+
+We could go by timezones and national population totals, but I think it would be fun to make a better estimate of the answer using disaggregated population data from WorldPop (<http://www.worldpop.org>).
+
+### Population Data
+
+Start by downloading the gridded population data from the WorldPop website. We'll use the 1km spatial resolution global mosaic for the year 2019. Note this file is 1 Gb in size. All the data are free: <https://www.worldpop.org/geodata/summary?id=24776> and you can find more information on how the data are made at the website.
+
+![](./world_ppp_wpgp_2019_Image.png){width=500px}
+
+#### Load the data
+
+```{r}
+library(raster) # used for reading/writing spatial gridded data
+
+wp2019 <- raster("./dat/ppp_2019_1km_Aggregated.tif")
+  print(proj4string(wp2019))
+  print(dim(wp2019)) # dimensions
+```
+
+### Calculation
+
+When our initial question asks for *most* people, I'll interpret that as *at least* half. So the answer we're looking for can be the UTC time for midnight just after degree of longitude that divides the world's population in half. Or say that last part another way, the population-weighted median degree of longitude. Of course we're going to be somewhat limited by the resolution of our grid.
+
+We'll start by getting the total population in each column of the WorldPop grid.
+```{r}
+popsums <- colSums(wp2019, na.rm=T)
+  print(head(popsums))
+```
+These will become our weights.
+
+Next, get the degree of longitude for each column of the WorldPop grid.
+```{r}
+dd_lon <- xFromCol(wp2019)
+  print(head(dd_lon))
+```
+
+To calculate the weighted median, we'll use another package.
+```{r}
+library(spatstat)
+
+wgt_median_lon <- weighted.median(dd_lon, popsums, na.rm=T)
+  print(wgt_median_lon)
+```
+
+It's about 4 minutes for each degree of longitude, converted to hours, and the median is positive so it's to the east and ahead of UTC time.
+```{r}
+hours_diff <- (wgt_median_lon * 4)/60
+  print(hours_diff)
+
+utc_diff <- 24 - hours_diff # midnight - difference
+  print(utc_diff) # UTC time when midnight passed the median meridian
+```
+And where is it??
+
+```{r echo=FALSE}
+library(ggplot2)
+library(sf)
+library(rnaturalearth)
+library(rnaturalearthdata)
+
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+ggplot(data = world) +
+  geom_sf() +
+  geom_vline(xintercept=wgt_median_lon, col="red") + 
+  xlab("Longitude") + ylab("Latitude")
+  
+```
+
+#### Happy (belated) new year to everyone!
+So there you have it. Thanks for the good question, Randall. 
+
+
+
+ 
+
+
