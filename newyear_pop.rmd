@@ -13,9 +13,9 @@ knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
 
 ## When did 2020 start for most people?
 
-Here's a fun little trivia question that a colleague recently asked. We know that the New Year starts at different times for different places - we see the fireworks in Australia long before New York City, for example. But **by what time were most of the world's people in 2020?**
+Here's a fun little trivia question that a colleague recently asked. We know that the New Year starts at different UTC times for different places - we see the fireworks displays in Australia long before New York City, for example. But **by what time were most of the world's people in 2020?**
 
-We could go by timezones and national population totals, but I think it would be fun to make a better estimate of the answer using disaggregated population data from WorldPop (<http://www.worldpop.org>).
+We could go by timezones and national population totals, but I think it would be fun to make an estimate using disaggregated population data from WorldPop (<http://www.worldpop.org>).
 
 ### Population Data
 
